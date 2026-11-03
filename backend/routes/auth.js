@@ -87,8 +87,10 @@ router.post('/register', async (req, res) => {
       [email, hashedPassword, name, userRole, false, verificationToken]
     );
 
-    // สร้างลิงก์สำหรับกดยืนยันอีเมล
-    const verifyUrl = `http://localhost:5000/api/auth/verify-email?token=${verificationToken}`;
+    // สร้างลิงก์สำหรับกดยืนยันอีเมลแบบไดนามิก (รองรับทั้ง Vercel Cloud และ localhost)
+    const host = req.get('host');
+    const protocol = req.headers['x-forwarded-proto'] || (host.includes('vercel.app') ? 'https' : req.protocol);
+    const verifyUrl = `${protocol}://${host}/api/auth/verify-email?token=${verificationToken}`;
 
     // ส่งอีเมล (หรือแสดงลิงก์ในคอนโซลสำหรับช่วงทดสอบ)
     const transporter = createTransporter();
@@ -152,13 +154,21 @@ router.get('/verify-email', async (req, res) => {
       [result.rows[0].id]
     );
 
+    // ลิงก์กลับหน้าล็อกอินแบบไดนามิก
+    const host = req.get('host');
+    const protocol = req.headers['x-forwarded-proto'] || (host.includes('vercel.app') ? 'https' : req.protocol);
+    const loginUrl = `${protocol}://${host}/login`;
+
     // แสดงหน้าข้อความสำเร็จแบบสวยงาม
     res.send(`
-      <div style="font-family: Arial, sans-serif; text-align: center; padding-top: 50px; background-color: #0f172a; color: white; min-height: 100vh;">
-        <h1 style="color: #4ade80;">✅ ยืนยันอีเมลสำเร็จเรียบร้อย!</h1>
-        <p style="color: #94a3b8;">บัญชีของคุณพร้อมใช้งานแล้ว สามารถกลับไปเข้าสู่ระบบที่หน้าเว็บได้เลยครับ</p>
-        <div style="margin-top: 30px;">
-          <a href="http://localhost:5173/login" style="background-color: #2563eb; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">
+      <div style="font-family: Arial, sans-serif; text-align: center; padding-top: 60px; background-color: #f8fafc; color: #1e293b; min-height: 100vh;">
+        <div style="max-width: 480px; margin: 0 auto; background: white; padding: 40px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+          <div style="width: 64px; height: 64px; background: #dcfce7; color: #16a34a; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 32px;">
+            ✓
+          </div>
+          <h1 style="color: #0f172a; font-size: 24px; margin-bottom: 8px;">ยืนยันอีเมลสำเร็จเรียบร้อย!</h1>
+          <p style="color: #64748b; font-size: 14px; margin-bottom: 24px; line-height: 1.5;">บัญชีสมาชิก NEXUS TECH PRO ของคุณพร้อมใช้งานแล้ว สามารถเข้าสู่ระบบเพื่อเลือกซื้อสินค้าได้ทันที</p>
+          <a href="${loginUrl}" style="display: inline-block; background-color: #2563eb; color: white; padding: 12px 28px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 14px;">
             ไปที่หน้าเข้าสู่ระบบ
           </a>
         </div>
