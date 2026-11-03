@@ -1,10 +1,8 @@
 {
   "name": "it-shop",
   "version": "1.0.0",
-  "description": "IT Shop Fullstack on Vercel",
   "scripts": {
-    "build": "cd frontend && npm install && npm run build",
-    "start": "node backend/server.js"
+    "build": "npm install --prefix frontend && npm run build --prefix frontend"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
